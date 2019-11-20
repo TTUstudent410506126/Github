@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html>
+	<head>
+	</head>
+	<body> 
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/109/three.min.js"></script>
+		<script src="https://rawgit.com/mrdoob/three.js/master/examples/js/loaders/MTLLoader.js"></script>
+		<script src="https://rawgit.com/mrdoob/three.js/master/examples/js/loaders/OBJLoader.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/stats.js/r16/Stats.min.js"></script>
+		<script src="https://threejs.org/examples/js/controls/OrbitControls.js"></script>
+		<script src="https://jyunming-chen.github.io/tutsplus/js/KeyboardState.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.5.1/dat.gui.min.js"></script>
+		<script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+		<script type="text/javascript">
+
+		var renderer, camera , scene, axes;
+		var stats, mesh;
+		var keyboard = new KeyboardState();
+		var pickables = [];
+		var raycaster = new THREE.Raycaster();
+		var mouse = new THREE.Vector2();
+		var light, controler, lit;
+
+		class lampswitch{
+			constructor(location){
+				this.myswitch = new THREE.Group();
+				this.casing = new THREE.Mesh(new THREE.CylinderGeometry(1.3, 1.3, 0.3, 15), new THREE.MeshPhongMaterial())
+				this.core = new THREE.Mesh(new THREE.CylinderGeometry(1, 1, 0.3, 15), new THREE.MeshPhongMaterial({
+				}))
+				this.myswitch.add(this.casing, this.core);this.myswitch.position.copy(location)
+				scene.add(this.myswitch);
+				this.casing.position.y = 0.5;
+				this.core.position.y = 0.8;
+			}
+		}
+		
+		init();
+		animate();
+
+		function init() {
+		      scene = new THREE.Scene();
+			  camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 1, 1000);
+			  camera.position.z = 50;
+			  camera.position.y = 30
+			  light = new THREE.PointLight(0xffffff);
+			  light.position.set(100, 300, 200);
+			  scene.add(light);
+			  var light2 = new THREE.AmbientLight(0x808080); // soft white light
+			  scene.add(light2);
+			  
+			  var gridXZ = new THREE.GridHelper(200, 20, 'red', 'white');
+			  scene.add(gridXZ);
+			  renderer = new THREE.WebGLRenderer();
+			  renderer.setSize(window.innerWidth, window.innerHeight);
+			  renderer.setClearColor(0x888888);
+			  let controls = new THREE.OrbitControls(camera, renderer.domElement);
+			  document.body.appendChild(renderer.domElement);
+			  
+			  var texture = new THREE.TextureLoader().load("A.jpg");
+			  texture.repeat.set(1,1);
+			  texture.wrapS = THREE.RepeaWrapping;
+			  texture.wrapT = THREE.RepeaWrapping;
+			  texture.minFilter = THREE.LinearFilter;
+			  
+			  var geometry = new THREE.BoxGeometry( 30, 1, 40 );
+			  var material = new THREE.MeshPhongMaterial( { map:texture} );
+			  var cube = new THREE.Mesh( geometry, material );
+			  cube.position.y += 10;
+			  scene.add( cube );
+			  
+			  var geometry = new THREE.BoxGeometry( 2, 10, 2 );
+			  var material = new THREE.MeshPhongMaterial( {map:texture} );
+			  var footA = new THREE.Mesh( geometry, material );
+			  footA.position.set(8,5,17);
+			  scene.add( footA );
+			  
+			  var geometry = new THREE.BoxGeometry( 2, 10, 2 );
+			  var material = new THREE.MeshPhongMaterial( {map:texture} );
+			  var footB = new THREE.Mesh( geometry, material );
+			  footB.position.set(-8,5,-17);
+			  scene.add( footB );
+			  
+			  var geometry = new THREE.BoxGeometry( 2, 10, 2 );
+			  var material = new THREE.MeshPhongMaterial( {map:texture} );
+			  var footC = new THREE.Mesh( geometry, material );
+			  footC.position.set(8,5,-17);
+			  scene.add( footC );
+			  
+			  var geometry = new THREE.BoxGeometry( 2, 10, 2 );
+			  var material = new THREE.MeshPhongMaterial( {map:texture} );
+			  var footD = new THREE.Mesh( geometry, material );
+			  footD.position.set(-8,5,17);
+			  scene.add( footD );
+			  
+			  var geometry = new THREE.BoxGeometry( 5, 1, 3 );
+			  var material = new THREE.MeshPhongMaterial();
+			  var con = new THREE.Mesh( geometry, material );
+			  con.position.set(7,11,0);
+			  scene.add( con );
+			  
+			  var NS = new lampswitch(con.position);
+			  scene.add(NS.myswitch);
+			  
+			  readModel('Ball_chair_V1', 30, new THREE.Vector3(30, 0, 0), Math.PI/230);
+			  readModel('28-polyester-masa-lambas', 7, new THREE.Vector3(0,10.5,0),Math.PI);
+			 	  
+		}
+
+		function animate() {
+		  requestAnimationFrame (animate);
+		  renderer.render (scene, camera);
+		}
+
+		function onDocumentMouseDown(event) {
+		  mouse.x = (event.clientX / window.innerWidth) * 3 - 1;
+		  mouse.y = -(event.clientY / window.innerHeight) * 4 + 1;
+		  raycaster.setFromCamera(mouse, camera);
+		  var intersects = raycaster.intersectObjects(pickables, false);
+		  if (intersects.length > 0) {
+			lit = !lit;
+			if (lit) {
+			  core.material.emissive = new THREE.Color(0x030303);
+			  light.intensity = 3;
+			} 
+			else {
+			  core.material.emissive = new THREE.Color('red');
+			  light.intensity = 2;
+			}
+		  } 
+		  else {
+			console.log('no hit')
+		  }
+		}
+
+		function readModel(modelName, targetSize = 1, pos, rotate) {
+			  var onProgress = function(xhr) {
+				if (xhr.lengthComputable) {
+				  var percentComplete = xhr.loaded / xhr.total * 100;
+				  console.log(Math.round(percentComplete, 2) + '% downloaded');
+				}
+			  };
+			  var onError = function(xhr) {};
+			  var mtlLoader = new THREE.MTLLoader();
+			  mtlLoader.setPath('model/' + modelName + '/' );
+			  mtlLoader.load(modelName + '.mtl', function(materials) {
+				materials.preload();
+				var objLoader = new THREE.OBJLoader();
+				objLoader.setMaterials(materials);
+				objLoader.setPath('model/' + modelName + '/');
+				objLoader.load(modelName + '.obj', function(object) {
+				  let theObject = unitize(object, targetSize);
+				  theObject.rotation.y = Math.PI / 3 +0.1;
+				  theObject.name = modelName;
+				  mesh  = theObject;
+				  mesh.position.copy(pos);
+				  mesh.rotation.y = rotate;
+				  scene.add(mesh);
+				}, onProgress, onError);
+			  });
+		}
+			
+		function unitize(object, targetSize) {
+			var box3 = new THREE.Box3();
+			box3.setFromObject(object);
+			var size = new THREE.Vector3();
+			size.subVectors(box3.max, box3.min);
+			var center = new THREE.Vector3();
+			center.addVectors(box3.max, box3.min).multiplyScalar(0.5);
+			console.log('center: ' + center.x + ', ' + center.y + ', ' + center.z);
+			console.log('size: ' + size.x + ', ' + size.y + ', ' + size.z);
+			var objSize = Math.max(size.x, size.y, size.z);
+			var scaleSet = targetSize / objSize;
+			var theObject = new THREE.Object3D();
+			theObject.add(object);
+			object.scale.set(scaleSet, scaleSet, scaleSet);
+			object.position.set(-center.x * scaleSet, -center.y * scaleSet + size.y / 2 * scaleSet, -center.z * scaleSet);
+			return theObject;
+		}
+		</script>
+	</body>
+</html>

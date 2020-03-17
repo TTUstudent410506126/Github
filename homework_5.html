@@ -46,7 +46,11 @@ body {
   varying vec3 color;
   varying vec3 My_pos;
 	
+<<<<<<< HEAD
   void perVertexShading(vec3 objpos,vec3 worldpos,vec3 eyepos) {
+=======
+  void perVertexShading(vec3 objpos,vec3 worldpos,vec3 Eyepos) {
+>>>>>>> master
     if (coordinate == 0) {
   	  if (objpos.x > 0.0) 
     	color = vec3 (1,1,1);
@@ -59,7 +63,11 @@ body {
     	color = vec3 (0,0,0);    	
     } 
 	  else if (coordinate == 2) {
+<<<<<<< HEAD
   	  if (eyepos.x > 0.0) 
+=======
+  	  if (Eyepos.x > 0.0) 
+>>>>>>> master
     	color = vec3 (1,1,1);
       else
     	color = vec3 (0,0,0);    	
@@ -67,28 +75,56 @@ body {
   }
   
   // your homework
+<<<<<<< HEAD
   void perPixelShading(vec3 objpos,vec3 worldpos,vec3 eyepos) {
       if (coordinate == 0)		My_pos = objpos;
       else if (coordinate == 1) My_pos = worldpos;
       else if(coordinate == 2)  My_pos = eyepos;
+=======
+  void perPixelShading(vec3 objpos,vec3 worldpos,vec3 Eyepos) {
+      if (coordinate == 0) {
+        My_pos = objpos;
+      }
+      else if (coordinate == 1) {
+        My_pos = worldpos;
+      }
+      else if(coordinate == 2){
+        My_pos = Eyepos;
+      }
+>>>>>>> master
   }
   
   void main() {
 	gl_Position = projectionMatrix* modelViewMatrix * vec4( position, 1.0);
     vec4 worldpos = modelMatrix * vec4 (position, 1.0);
+<<<<<<< HEAD
     vec4 eyepos = modelViewMatrix * vec4 (position, 1.0);
 	
   	if (shading == 0)  // per-vertex shading
     	perVertexShading(position, worldpos.xyz,eyepos.xyz);
 	else
 		perPixelShading(position, worldpos.xyz,eyepos.xyz);
+=======
+    vec4 Eyepos = modelViewMatrix * vec4 (position, 1.0);
+	
+  	if (shading == 0)  // per-vertex shading
+    	perVertexShading(position, worldpos.xyz,Eyepos.xyz);
+	else
+		perPixelShading(position, worldpos.xyz,Eyepos.xyz);
+>>>>>>> master
   }
 </script>
 
 <script id="myFragmentShader" type="x-shader/x-fragment">
+<<<<<<< HEAD
   uniform int shading; 
   varying vec3 color;
   varying vec3 My_pos;
+=======
+  varying vec3 color;
+  varying vec3 My_pos;
+  uniform int shading; 
+>>>>>>> master
 	
   void main() {
 	vec3 mycolor;
@@ -106,6 +142,7 @@ body {
 </script>
 
 <script id="myVertexShader2" type="x-shader/x-fragment">
+<<<<<<< HEAD
 	uniform vec3 light;
     varying vec3 eyelightdir;
     varying vec3 eyenormal;
@@ -117,10 +154,24 @@ body {
         vec4 eyelight= viewMatrix * vec4 (light, 1.0);
         eyelightdir = normalize (eyelight.xyz - eyepos.xyz);
         eyenormal = normalMatrix * normal;
+=======
+	uniform vec3 lightpos;
+    varying vec3 light;
+    varying vec3 normal;
+    varying vec4 Eyepos;
+	
+	void main() {
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        Eyepos = modelViewMatrix * vec4 (position, 1.0);
+        vec4 eyelightpos= viewMatrix * vec4 (lightpos, 1.0);
+        light = normalize (eyelightpos.xyz - Eyepos.xyz);
+        normal = normalMatrix * normal;
+>>>>>>> master
     }
 </script>
 
 <script id="myFragmentShader2" type="x-shader/x-fragment">
+<<<<<<< HEAD
       varying vec3 eyelightdir;
       varying vec3 eyenormal;
       varying vec4 eyepos;
@@ -131,6 +182,19 @@ body {
           vec3 h = normalize(-normalize (eyepos.xyz) + normalize (eyelightdir));
           float shininess = 40.;
           vec3 specular = pow (dot (eyenormal, h), shininess) *vec3 (1,0,0);
+=======
+      varying vec3 light;
+      varying vec3 normal;
+      varying vec4 Eyepos;
+	  
+      void main() {
+          float intensity = dot (normalize (normal), normalize (light));
+          vec3 diffuse = intensity*vec3 (1,1,1);
+          vec3 h = normalize(-normalize (Eyepos.xyz) + normalize (light));
+		  
+          float shininess = 40.;
+          vec3 specular = pow (dot (normal, h), shininess) *vec3 (1,0,0);
+>>>>>>> master
           gl_FragColor = vec4(diffuse + specular, 1.0);
       }
 </script>
@@ -149,6 +213,10 @@ body {
 		}
 	});
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> master
 	var scene, renderer, camera;
 	var mesh,target,light;
 	var movingTeapot;
@@ -192,7 +260,11 @@ function init() {
 
   teapotMaterial = new THREE.ShaderMaterial({
     uniforms: {
+<<<<<<< HEAD
       light: {type:'v3', value: new THREE.Vector3(0, 30, 20) },
+=======
+      lightpos: {type:'v3', value: new THREE.Vector3(0, 30, 20) },
+>>>>>>> master
 	  shading: {type:'i', value: 0},
       coordinate: {type:'i', value: 0},
 	},
@@ -205,7 +277,11 @@ function init() {
   
   teapotMaterial2 = new THREE.ShaderMaterial({
 	uniforms:{
+<<<<<<< HEAD
 		light: {type:'v3', value: new THREE.Vector3(0, 30, 20) },
+=======
+		lightpos: {type:'v3', value: new THREE.Vector3(0, 30, 20) },
+>>>>>>> master
 	},
 	    vertexShader: document.getElementById('myVertexShader2').textContent,
 		fragmentShader: document.getElementById('myFragmentShader2').textContent
@@ -220,7 +296,11 @@ function animate() {
 
   // update the uniform variable
   if (teapot !== undefined) {
+<<<<<<< HEAD
     teapotMaterial2.uniforms.light.value.copy(pointLight.position);
+=======
+    teapotMaterial2.uniforms.lightpos.value.copy(pointLight.position);
+>>>>>>> master
   }
   if (movingTeapot !== undefined) {
 	movingTeapot.position.set (70*Math.cos(angle), 0, 70*Math.sin(angle));
